@@ -1,63 +1,118 @@
 #!/bin/bash
 set -e
 
-echo "======================================"
-echo "   VPS SETUP - DEV + MINING READY"
-echo "======================================"
+OVERDRIVE_DIR="$HOME/overdrive"
+SESSION_NAME="overdrive"
 
-# Update system
+# =========================
+# BANNER
+# =========================
+echo "=========================================="
+echo "      🚀 OVERDRIVE SYSTEM v1.0 🚀        "
+echo "      INITIALIZING VPS CORE STACK       "
+echo "=========================================="
+
+# =========================
+# ROOT CHECK
+# =========================
+if [ "$EUID" -ne 0 ]; then
+    echo "[!] Please run as root: sudo bash script.sh"
+    exit 1
+fi
+
+# =========================
+# BASE SYSTEM
+# =========================
 echo "[1/6] Updating system..."
 apt-get update -y && apt-get upgrade -y
 
-# Basic tools
-echo "[2/6] Installing basic tools..."
+echo "[2/6] Installing base tools..."
 apt-get install -y \
-    curl wget git sudo nano htop unzip screen tmux \
-    build-essential software-properties-common
+    curl wget git sudo nano htop unzip \
+    tmux screen neofetch build-essential
 
-# Python + pip
-echo "[3/6] Installing Python..."
-apt-get install -y python3 python3-pip python3-venv
+# =========================
+# PYTHON + NODE
+# =========================
+echo "[3/6] Installing dev stack..."
+apt-get install -y python3 python3-pip
 
-# Node.js (LTS)
-echo "[4/6] Installing Node.js..."
 curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
 apt-get install -y nodejs
 
-# Docker (optional tapi penting buat VPS dev)
-echo "[5/6] Installing Docker..."
+# =========================
+# DOCKER
+# =========================
+echo "[4/6] Installing Docker..."
 curl -fsSL https://get.docker.com | sh
 systemctl enable docker
 systemctl start docker
 
-# Security basic
-echo "[6/6] Basic security setup..."
-apt-get install -y ufw fail2ban
-ufw allow OpenSSH || true
-ufw --force enable || true
+# =========================
+# OVERDRIVE ENV FOLDER
+# =========================
+echo "[5/6] Setting up Overdrive environment..."
+mkdir -p $OVERDRIVE_DIR
+cd $OVERDRIVE_DIR
 
-echo "======================================"
-echo "   DEV ENV READY ✔"
-echo "======================================"
+cat > start.sh << 'EOF'
+#!/bin/bash
+clear
+echo "=================================="
+echo "   🚀 OVERDRIVE MODE ACTIVE 🚀   "
+echo "=================================="
+neofetch || true
+echo ""
+echo "System ready:"
+echo "- Python3 ✔"
+echo "- Node.js ✔"
+echo "- Docker ✔"
+echo "- Tools ✔"
+echo ""
+echo "Tip:"
+echo "- detach tmux: CTRL+B then D"
+echo "- reattach: tmux attach -t overdrive"
+echo "=================================="
+bash
+EOF
 
-# Optional: Mining setup (XMrig)
-read -p "Install XMRig (CPU mining tool)? (y/n): " answer
+chmod +x start.sh
 
-if [[ "$answer" == "y" ]]; then
-    echo "[*] Installing XMRig..."
+# =========================
+# OPTIONAL MINING TOOLS
+# =========================
+echo "[6/6] Optional tools..."
+
+read -p "Install XMRig (CPU miner)? (y/n): " mining
+
+if [[ "$mining" == "y" ]]; then
     apt-get install -y git cmake libuv1-dev libssl-dev libhwloc-dev
 
-    git clone https://github.com/xmrig/xmrig.git
-    cd xmrig
+    git clone https://github.com/xmrig/xmrig.git $OVERDRIVE_DIR/xmrig
+    cd $OVERDRIVE_DIR/xmrig
     mkdir build && cd build
     cmake ..
     make -j$(nproc)
 
-    echo "XMRig installed. Configure config.json sebelum run."
-    echo "======================================"
-else
-    echo "Skipping mining setup."
+    echo "[✔] XMRig installed"
 fi
 
-echo "DONE ✔ VPS siap dipakai"
-echo "Use: docker, python, node, git, htop"
+# =========================
+# AUTO START MODE
+# =========================
+echo "[*] Starting Overdrive TMUX session..."
+
+tmux has-session -t $SESSION_NAME 2>/dev/null
+
+if [ $? != 0 ]; then
+    tmux new-session -d -s $SESSION_NAME "$OVERDRIVE_DIR/start.sh"
+fi
+
+echo "=========================================="
+echo "   ✔ OVERDRIVE SYSTEM READY"
+echo "=========================================="
+echo "COMMANDS:"
+echo "- Attach: tmux attach -t overdrive"
+echo "- Detach: CTRL+B + D"
+echo "- Restart: tmux kill-session -t overdrive"
+echo "=========================================="
