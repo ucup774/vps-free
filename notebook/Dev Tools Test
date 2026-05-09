@@ -1,0 +1,3 @@
+!git --version
+!python --version
+!node -v || echo "Node not installed (optional)"
