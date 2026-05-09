@@ -1,6 +1,15 @@
 #!/bin/bash
 
-echo "Ubuntu mini environment ready"
+# Banner keren ala xinai
+echo "=========================================="
+echo "   🚀 YUDZX-TECH OVERDRIVE READY 🚀      "
+echo "   Status: ROOT VIRTUAL AUTO-LOAD       "
+echo "=========================================="
+
+# Jalankan neofetch biar kelihatan spek VPS-nya
 neofetch
 
-exec "$@"
+# Otomatis masuk ke mode PROOT (Root Virtual)
+# Biar lu langsung bisa install-install tanpa command ditolak
+echo "[*] Launching Root Environment..."
+proot -0 -w ~ /bin/bash
