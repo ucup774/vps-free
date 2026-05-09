@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo "🚀 Overdrive Binder Initializing..."
+
+pip install --upgrade pip
+
+echo "✔ Setup complete"
