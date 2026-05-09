@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo "Ubuntu mini environment ready"
+neofetch
+
+exec "$@"
