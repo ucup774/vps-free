@@ -1,0 +1,8 @@
+htop
+nano
+curl
+wget
+git
+tmux
+neofetch
+python3-pip
