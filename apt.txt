@@ -1,0 +1,9 @@
+git
+curl
+wget
+nano
+htop
+tmux
+screen
+neofetch
+build-essential
