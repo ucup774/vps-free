@@ -1,15 +1,63 @@
 #!/bin/bash
+set -e
 
-# Banner keren ala xinai
-echo "=========================================="
-echo "   🚀 YUDZX-TECH OVERDRIVE READY 🚀      "
-echo "   Status: ROOT VIRTUAL AUTO-LOAD       "
-echo "=========================================="
+echo "======================================"
+echo "   VPS SETUP - DEV + MINING READY"
+echo "======================================"
 
-# Jalankan neofetch biar kelihatan spek VPS-nya
-neofetch
+# Update system
+echo "[1/6] Updating system..."
+apt-get update -y && apt-get upgrade -y
 
-# Otomatis masuk ke mode PROOT (Root Virtual)
-# Biar lu langsung bisa install-install tanpa command ditolak
-echo "[*] Launching Root Environment..."
-proot -0 -w ~ /bin/bash
+# Basic tools
+echo "[2/6] Installing basic tools..."
+apt-get install -y \
+    curl wget git sudo nano htop unzip screen tmux \
+    build-essential software-properties-common
+
+# Python + pip
+echo "[3/6] Installing Python..."
+apt-get install -y python3 python3-pip python3-venv
+
+# Node.js (LTS)
+echo "[4/6] Installing Node.js..."
+curl -fsSL https://deb.nodesource.com/setup_lts.x | bash -
+apt-get install -y nodejs
+
+# Docker (optional tapi penting buat VPS dev)
+echo "[5/6] Installing Docker..."
+curl -fsSL https://get.docker.com | sh
+systemctl enable docker
+systemctl start docker
+
+# Security basic
+echo "[6/6] Basic security setup..."
+apt-get install -y ufw fail2ban
+ufw allow OpenSSH || true
+ufw --force enable || true
+
+echo "======================================"
+echo "   DEV ENV READY ✔"
+echo "======================================"
+
+# Optional: Mining setup (XMrig)
+read -p "Install XMRig (CPU mining tool)? (y/n): " answer
+
+if [[ "$answer" == "y" ]]; then
+    echo "[*] Installing XMRig..."
+    apt-get install -y git cmake libuv1-dev libssl-dev libhwloc-dev
+
+    git clone https://github.com/xmrig/xmrig.git
+    cd xmrig
+    mkdir build && cd build
+    cmake ..
+    make -j$(nproc)
+
+    echo "XMRig installed. Configure config.json sebelum run."
+    echo "======================================"
+else
+    echo "Skipping mining setup."
+fi
+
+echo "DONE ✔ VPS siap dipakai"
+echo "Use: docker, python, node, git, htop"
